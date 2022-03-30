@@ -56,7 +56,7 @@ func abs(x int) int {
 
 func isCellAttackable(x int, y int, board *Chessboard) bool {
 	// Out of board check
-	if x > board.boardSize || y > board.boardSize {
+	if x > board.boardSize || y > board.boardSize || (x == board.queenX && y == board.queenY) {
 		return false
 	}
 
@@ -81,8 +81,50 @@ func isCellBlocked(x int, y int, board *Chessboard) bool {
 
 	// Iterate obstacles
 	for _, obs := range board.obstacles {
-		if (obs[0]%x == 0) && (obs[1]%y == 0) {
-			return true
+		// Orthogonal check
+		if (x == board.queenX || y == board.queenY) && (obs[1] == board.queenX || obs[0] == board.queenY) {
+			// Upper
+			if x == obs[1] && y >= obs[0] && obs[0] >= board.queenY {
+				return true
+			}
+			// Left
+			if x <= obs[1] && obs[1] <= board.queenX && y == obs[0] {
+				return true
+			}
+			// Right
+			if x >= obs[1] && obs[1] >= board.queenX && y == obs[0] {
+				return true
+			}
+			// Bottom
+			if x == obs[1] && y <= obs[0] && obs[0] <= board.queenY {
+				return true
+			}
+		}
+
+		// Diagonal check
+		if abs(x-board.queenX) == abs(y-board.queenY) && abs(obs[1]-board.queenX) == abs(obs[0]-board.queenY) {
+			// Upper
+			if obs[0] >= board.queenY && y >= obs[0] {
+				// Left
+				if x <= obs[1] && obs[1] <= board.queenX {
+					return true
+				}
+				// Right
+				if x >= obs[1] && obs[1] >= board.queenX {
+					return true
+				}
+			}
+			// Lower
+			if obs[0] <= board.queenY && y <= obs[0] {
+				// Left
+				if x <= obs[1] && obs[1] <= board.queenX {
+					return true
+				}
+				// Right
+				if x >= obs[1] && obs[1] >= board.queenX {
+					return true
+				}
+			}
 		}
 	}
 
@@ -98,15 +140,6 @@ func queensAttack(boardSize int, obstaclesCount int, queenY int, queenX int, obs
 	chessboard.queenY = queenY
 	chessboard.obstacles = obstacles
 
-	// Init stuck stats
-	// stuckUl := false
-	// stuckUc := false
-	// stuckUr := false
-	// stuckCl := false
-	// stuckCr := false
-	// stuckBl := false
-	// stuckBc := false
-	// stuckBr := false
 	counter := 0
 
 	// Iterate board row
@@ -115,7 +148,7 @@ func queensAttack(boardSize int, obstaclesCount int, queenY int, queenX int, obs
 		for x := 1; x <= boardSize; x++ {
 			if isCellAttackable(x, y, &chessboard) {
 				if !isCellBlocked(x, y, &chessboard) {
-					fmt.Println(x, y)
+					// fmt.Println(x, y)
 					counter++
 				}
 			}
